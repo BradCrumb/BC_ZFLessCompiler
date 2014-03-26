@@ -1,7 +1,7 @@
 <?php
 /**
  * Copy this file to the global config directory of your ZF application and 
- * rename it to lesscompiler.[global|local|...].php and adjust the settings to fit your needs.
+ * rename it to bc_zflesscompiler.[global|local|...].php and adjust the settings to fit your needs.
  *
  * When you set a sourcefolder ALWAYS set a targetfolder!
  * When you set multiple sourcefolders ALWAYS set the corresponding targetfolders and 
@@ -13,7 +13,7 @@
  * $rpath = realpath(getcwd());
  * 
  * return array(
- * 		'LessCompiler' => array(
+ * 		'BC_LessCompiler' => array(
  * 			'importDir' => $rpath . '/less/inc/',
  * 			'sourceFolder' => array(
  * 				'default' => $rpath . '/less/',
@@ -25,7 +25,7 @@
  * 	);
  */
 return array(
-	'LessCompiler' => array(
+	'BC_ZFLessCompiler' => array(
 		/* Put your custom settings here */
 	),
 );
