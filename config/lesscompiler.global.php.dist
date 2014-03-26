@@ -1,0 +1,31 @@
+<?php
+/**
+ * Copy this file to the global config directory of your ZF application and 
+ * rename it to lesscompiler.[global|local|...].php and adjust the settings to fit your needs.
+ *
+ * When you set a sourcefolder ALWAYS set a targetfolder!
+ * When you set multiple sourcefolders ALWAYS set the corresponding targetfolders and 
+ * use unique and corresponding keys.
+ *
+ * So: sourcefolder['default'] = ... and targetfolder['default'] = ..., note the corresponding 'default' keys
+ * 
+ * @example The configuration file could be something like this
+ * $rpath = realpath(getcwd());
+ * 
+ * return array(
+ * 		'LessCompiler' => array(
+ * 			'importDir' => $rpath . '/less/inc/',
+ * 			'sourceFolder' => array(
+ * 				'default' => $rpath . '/less/',
+ * 			),
+ * 			'targetFolder' => array(
+ * 		 		'default' => $rpath . '/public/css/',
+ * 			),
+ * 		),
+ * 	);
+ */
+return array(
+	'LessCompiler' => array(
+		/* Put your custom settings here */
+	),
+);
