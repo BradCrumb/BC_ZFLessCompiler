@@ -1,12 +1,12 @@
 <?php
-namespace LessCompiler;
+namespace BC_ZFLessCompiler;
 
 use Zend\ModuleManager\ModuleManager;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Stdlib\Hydrator\ClassMethods;
-use LessCompiler\Compiler\Less as LessCompiler;
+use BC_ZFLessCompiler\Compiler\Less as LessCompiler;
 
 class Module implements
     AutoloaderProviderInterface,

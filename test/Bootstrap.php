@@ -1,5 +1,5 @@
 <?php
-namespace LessCompilerTest;
+namespace BC_ZFLessCompilerTest;
 
 use Zend\Loader\AutoloaderFactory;
 use Zend\Mvc\Service\ServiceManagerConfig;
