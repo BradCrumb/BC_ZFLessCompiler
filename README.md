@@ -6,9 +6,9 @@ A module for Zend Framework 2+ to easily compile all of your Less-files by using
 
 This module has the following requirements:
 
-* ZendFramework 2.2.5 or greater
 * PHP 5.3.0 or greater.
-* Lessc by Leafo.net in the vendor map
+* ZendFramework 2.2 or greater
+* Lessc by Leafo.net in the vendor map (default git clone will do) 0.3.9 or greater
 
 ## Installation
 

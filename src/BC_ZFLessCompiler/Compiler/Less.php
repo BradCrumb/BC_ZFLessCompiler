@@ -53,6 +53,13 @@ class Less {
     protected static $_leafoLessPHPfile;
 
 /**
+ * Minimum required Zend Framework version
+ *
+ * @var string
+ */
+    protected static $_minVersionZF = '2.2';
+
+/**
 * Minimum required PHP version
 *
 * @var string
@@ -124,6 +131,7 @@ class Less {
                 $cacheOption = $this->_getConfigurationValue('cache', null);
 
 				$this->_verifyPHPVersion();
+                $this->_verifyZFVersion();
 				$this->_verifyLeafoLessPHP();
 				$this->_setCache($cacheOption);
 				$this->_setFolders();
@@ -178,6 +186,21 @@ class Less {
         	throw new LessCompilerException(sprintf('PHP version %s or higher is required!', self::$_minVersionPHP));
         }
 	}
+
+/**
+ * Check the Zend Framework version
+ *
+ * @throws LessCompilerException when Zend Framework version is not compatible
+ * @return void
+ */
+    protected function _verifyZFVersion() {
+        if (\Zend\Version\Version::compareVersion(self::$_minVersionZF) > 0) {
+            throw new LessCompilerException(sprintf('You currently use Zend Framework %s, but %s is at least required', 
+                /* 1 */ \Zend\Version\Version::VERSION,
+                /* 2 */ self::$_minVersionZF
+                ));
+        }
+    }
 
 /**
  * Check existance of LeafoPHP and it's version
