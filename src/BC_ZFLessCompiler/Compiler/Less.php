@@ -194,7 +194,7 @@ class Less {
 		self::$_leafoLessPHPfile = $path . DIRECTORY_SEPARATOR . $file;
 
 		if (!file_exists(self::$_leafoLessPHPfile)) {
-			throw new LessCompilerException('Leafo LessPHP file "%s" does not exist!', $file);	
+			throw new LessCompilerException(sprintf('Leafo LessPHP file "%s" does not exist!', $file));	
 		}
 
 		require_once(self::$_leafoLessPHPfile);

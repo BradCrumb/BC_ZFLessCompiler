@@ -41,9 +41,9 @@ The options are
 - autoRun (default: false)
 	Always compile the Less files (ignores the enabled option)
 
-- path_to_leafo_lessphp (default: vendor/leafo/lessphp)
-	Set the path for the LessPHP files by Leafo (https://github.com/leafo/lessphp)
-	Defaults to "leafo/lessphp" in the application's vendor map
+- path_to_leafo_lessphp (default: vendor/lessphp)
+	Set the path for the LessPHP files by Leafo (https://github.com/lessphp)
+	Defaults to "lessphp" in the application's vendor map
 
 - importDir (default: null)
 	Import directory: please use realpath(...) to get a valid directory
