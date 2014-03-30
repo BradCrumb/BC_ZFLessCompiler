@@ -8,6 +8,8 @@ use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Stdlib\Hydrator\ClassMethods;
 use BC_ZFLessCompiler\Compiler\Less as LessCompiler;
 
+use Zend\Mvc\MvcEvent;
+
 class Module implements
     AutoloaderProviderInterface,
     ConfigProviderInterface,
@@ -42,10 +44,18 @@ class Module implements
         );
     }
 
+    // http://www.cnblogs.com/wkpilu/p/how_to_write_zf2_module.html < ook een optie als onderstaande bout is
     public function onBootstrap(\Zend\EventManager\Event $event) { 
-        $config = $event->getApplication()->getServiceManager()->get(__NAMESPACE__ . 'Config');
+        $eventManager = $event->getApplication()->getEventManager();
+        $eventManager->attach(MvcEvent::EVENT_DISPATCH, array($this, 'runCompiler'));
+    }
+
+    public function runCompiler($event) {
+        $serviceManager = $event->getApplication()->getServiceManager();
+        $config = $serviceManager->get(__NAMESPACE__ . 'Config');
 
         $lessCompiler = new LessCompiler($config);
+        //$lessCompiler->processModules($serviceManager);
         $lessCompiler->setEnforcement(
             $event->getRequest()->getQuery(LessCompiler::QUERY_PARAM_ENFORCEMENT, false)
         );

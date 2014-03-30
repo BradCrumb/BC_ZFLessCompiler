@@ -23,6 +23,30 @@
  * 			),
  * 		),
  * 	);
+ *
+ * It is even possible to have multiple sourcefolders be compiled to one css file.
+ * To achieve this, you'll have to supply a array key for the sourceFolder array which contains an array of source-directories.
+ * And the target folder with the same key has to be the name of a css file.
+ *
+ * @example
+ * return array(
+ * 		'BC_LessCompiler' => array(
+ * 			'importDir' => $rpath . '/less/inc/',
+ * 			'sourceFolder' => array(
+ * 				'default' => $rpath . '/less/',
+ * 				'test' => array (
+ * 					$rpath . '/test-less-dir-a/',
+ * 					$rpath . '/test-less-dir-b/',
+ * 				 	$rpath . '/test-less-dir-c/',	
+ * 				),
+ * 			),
+ * 			'targetFolder' => array(
+ * 		 		'default' => $rpath . '/public/css/',
+ * 		 		'test' => $rpath . '/public/css/test/merged.css',
+ * 			),
+ * 		),
+ * 	);
+ * 
  */
 return array(
 	'BC_ZFLessCompiler' => array(

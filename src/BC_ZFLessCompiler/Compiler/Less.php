@@ -289,10 +289,23 @@ class Less {
     			foreach ($sourceFolder as $fIndex => $fValue) {
     				// Only add the Less folder to source-folders if it exists.
                     // Also the target-folder with the same key should be set and exist.
-    				if (is_dir($fValue) && array_key_exists($fIndex, $targetFolder) && is_dir($targetFolder[$fIndex])) {
-						$this->_lessFolders[$fIndex] = realpath($fValue) . DIRECTORY_SEPARATOR;
+    				if (is_string($fValue) && is_dir($fValue) && array_key_exists($fIndex, $targetFolder) && is_dir($targetFolder[$fIndex])) {
+                        $this->_lessFolders[$fIndex] = realpath($fValue) . DIRECTORY_SEPARATOR;
 						$this->_cssFolders[$fIndex] = realpath($targetFolder[$fIndex]) . DIRECTORY_SEPARATOR;
-    				}
+    				} elseif (is_array($fValue) && $fValue) {
+                        if (substr($targetFolder[$fIndex],-4) != '.css') {
+                            throw new LessCompilerException('When you supply an array of sourcefolders for a specific key, the targetfolder should be a string which represents a css filename');
+                        }
+
+                        $path = str_replace(basename($targetFolder[$fIndex]), null, $targetFolder[$fIndex]);
+                        $this->_cssFolders[$fIndex] = realpath($path) . DIRECTORY_SEPARATOR . basename($targetFolder[$fIndex]);
+
+                        foreach ($fValue as $subFolderValue) {
+                            if (is_string($subFolderValue) && is_dir($subFolderValue)) {
+                                $this->_lessFolders[$fIndex][] = realpath($subFolderValue) . DIRECTORY_SEPARATOR;
+                            }
+                        }
+                    }
     			}
     		} elseif (is_string($sourceFolder) && is_dir($sourceFolder) && 
                       is_string($targetFolder) && is_dir($targetFolder)) {
@@ -316,11 +329,27 @@ class Less {
     	}
 
         foreach ($this->_cssFolders as $folder) {
-        	if (!is_writable($folder)) {
+        	if (is_dir($folder) && !is_writable($folder)) {
         		throw new LessCompilerException(sprintf('"%s" is not writable!', $folder));
         	}
         }
     }
+
+    // public function processModules(\Zend\ServiceManager\ServiceManager $sm) {
+    //     $moduleManager = $sm->get('modulemanager');
+    //     $modules = $moduleManager->getLoadedModules();
+
+    //     unset(
+    //         $modules['Application'],
+    //         $modules['BC_ZFLessCompiler']
+    //     );
+
+    //     foreach ($modules as $module) 
+    //         // $moduleConfig = $module->getConfig();
+    //         // echo '<pre>';
+    //         // print_r($moduleConfig);
+    //     }
+    // }
 
 /**
  * Proxy method for generateCss
@@ -341,40 +370,74 @@ class Less {
 
         if ($this->enabled) {
             foreach ($this->_lessFolders as $key => $lessFolder) {
-                $files = new \RecursiveIteratorIterator(
-                    new \RecursiveRegexIterator(
-                        new \RecursiveDirectoryIterator(
-                            $lessFolder, \FilesystemIterator::SKIP_DOTS
-                        ),
-                        '/^(?!.*(\/inc|\.txt|\.cvs|\.svn|\.git)).*$/', \RecursiveRegexIterator::MATCH
-                    ),
-                    \RecursiveIteratorIterator::SELF_FIRST
-                );
+                if (is_array($lessFolder)) {
+                    $lessCode = '';
+                    foreach ($lessFolder as $lFolder) {
+                        $files = $this->getFilesFromDirectory($lFolder);
 
-                foreach ($files as $file) {
-                    $path = str_ireplace(
-                    			rtrim($lessFolder, DIRECTORY_SEPARATOR),
-                    			null,
-                    			rtrim($file->getRealPath(), DIRECTORY_SEPARATOR)
-                    		);
+                        foreach ($files as $file) {
+                            $lessCode .= file_get_contents($file) . PHP_EOL;
+                        }
+                    }
 
-                    $path = rtrim($this->_cssFolders[$key], DIRECTORY_SEPARATOR) . $path;
-                    if ($file->isDir()) {
-                    	if (!is_dir($path)) {
-                    		mkdir($path, 0777);
-                    	}
-                    } else {
-                    	$cssFile = str_ireplace('.less', '.css', $path);
-                    	
-                    	if ($this->_autoCompileLess($file->getRealPath(), $cssFile)) {
-                    		$generatedFiles[] = $cssFile;
-                    	}
+                    // Let's generate a temporaty Less file
+                    if (strlen(trim($lessCode)) > 3) {
+                        $tmpLessFile = str_ireplace('.css', '.less', $this->_cssFolders[$key]);
+                        if (file_put_contents($tmpLessFile, $lessCode)) {
+                            if ($this->_autoCompileLess($tmpLessFile, $this->_cssFolders[$key])) {
+                                $generatedFiles[] = $cssFile;
+                            }
+                            unlink($tmpLessFile);
+                        } else {
+                            throw new LessCompilerException(sprintf('Could not write temporary Less file "%s"', $tmpLessFile));
+                        }
+                    }
+                } else {
+                    $files = $this->getFilesFromDirectory($lessFolder);
+
+                    foreach ($files as $file) {
+                        $path = str_ireplace(
+                        			rtrim($lessFolder, DIRECTORY_SEPARATOR),
+                        			null,
+                        			rtrim($file->getRealPath(), DIRECTORY_SEPARATOR)
+                        		);
+
+                        $path = rtrim($this->_cssFolders[$key], DIRECTORY_SEPARATOR) . $path;
+                        if ($file->isDir()) {
+                        	if (!is_dir($path)) {
+                        		mkdir($path, 0777);
+                        	}
+                        } else {
+                        	$cssFile = str_ireplace('.less', '.css', $path);
+                        	
+                        	if ($this->_autoCompileLess($file->getRealPath(), $cssFile)) {
+                        		$generatedFiles[] = $cssFile;
+                        	}
+                        }
                     }
                 }
             }
         }
 
         return $generatedFiles;
+    }
+
+/**
+ * Return array of files wihtin a given directory
+ * 
+ * @param  string $directory
+ * @return array
+ */
+    protected function getFilesFromDirectory($directory) {
+        return new \RecursiveIteratorIterator(
+                        new \RecursiveRegexIterator(
+                            new \RecursiveDirectoryIterator(
+                                $directory, \FilesystemIterator::SKIP_DOTS
+                            ),
+                            '/^(?!.*(\/inc|\.txt|\.cvs|\.svn|\.git)).*$/', \RecursiveRegexIterator::MATCH
+                        ),
+                        \RecursiveIteratorIterator::SELF_FIRST
+                    );
     }
 
 /**
@@ -386,7 +449,7 @@ class Less {
  */
     protected function _autoCompileLess($inputFile, $outputFile)
     {
-        $cacheKey = md5(DIRECTORY_SEPARATOR . __NAMESPACE__ . str_replace($this->_getConfigurationValue('sourceFolder'), null, $outputFile));
+        $cacheKey = md5(json_encode($inputFile) . $outputFile);
 
         /**
          * If the file has not been generated or the cache has not been set or has expired >> use the inputFile to (re)generate the file.
