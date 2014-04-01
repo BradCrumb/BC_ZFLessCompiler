@@ -9,8 +9,8 @@ return array(
 		// Always compile the Less files (ignores the enabled option)
 		'autoRun'           => false,
 		// Set the path for the LessPHP files by Leafo (https://github.com/lessphp)
-        // Defaults to "leafo/lessphp" in the application's vendor map
-        'path_to_leafo_lessphp' => 'vendor/lessphp',
+        // Defaults to "modules/BC_ZFLessCompiler/vendor/lessphp" in the application's vendor map
+        'path_to_leafo_lessphp' =>  realpath(getcwd() . DIRECTORY_SEPARATOR . 'module/BC_ZFLessCompiler/vendor/lessphp'),
 		// Import directory: please use realpath(...) to get a valid directory
 		// ie. realpath(getcwd() . '/less/inc/');
 		'importDir'			=> null,

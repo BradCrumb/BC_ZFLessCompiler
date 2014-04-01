@@ -3,7 +3,9 @@ namespace BC_ZFLessCompiler\Compiler;
 
 use BC_ZFLessCompiler\Compiler\Less as LessCompiler;
 
-require_once(LessCompiler::getLeafoLessPHPFile());
+if (!class_exists('lessc')) {
+    require_once(LessCompiler::getLeafoLessPHPFile());
+}
 
 /**
  * LessExt

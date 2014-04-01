@@ -47,7 +47,7 @@ class Module implements
     // http://www.cnblogs.com/wkpilu/p/how_to_write_zf2_module.html < ook een optie als onderstaande bout is
     public function onBootstrap(\Zend\EventManager\Event $event) { 
         $eventManager = $event->getApplication()->getEventManager();
-        $eventManager->attach(MvcEvent::EVENT_DISPATCH, array($this, 'runCompiler'));
+        $eventManager->attach(MvcEvent::EVENT_FINISH, array($this, 'runCompiler'));
     }
 
     public function runCompiler($event) {

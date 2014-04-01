@@ -29,8 +29,7 @@ class Less {
     	// Always compile the Less files (ignores the enabled option)
         'autoRun'           => false,
         // Set the path for the LessPHP files by Leafo (https://github.com/leafo/lessphp)
-        // Defaults to "leafo/lessphp" in the application's vendor map
-        'path_to_leafo_lessphp' => 'vendor/leafo/lessphp',
+        'path_to_leafo_lessphp' => null,
         // Import directory
     	'importDir'			=> null,
         // Where to look for Less files
@@ -220,7 +219,9 @@ class Less {
 			throw new LessCompilerException(sprintf('Leafo LessPHP file "%s" does not exist!', $file));	
 		}
 
-		require_once(self::$_leafoLessPHPfile);
+		if (!class_exists('lessc')) {
+            require_once(self::$_leafoLessPHPfile);
+        }
 
 		if (\lessc::$VERSION < self::$_minVersionLessc) {
             throw new LessCompilerException(sprintf('Leafo LessPHP version %s or higher is required!', self::$_minVersionLessc));
