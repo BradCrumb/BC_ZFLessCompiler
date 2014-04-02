@@ -8,7 +8,7 @@ This module has the following requirements:
 
 * PHP 5.3.0 or greater.
 * ZendFramework 2.2 or greater
-* Lessc by Leafo.net in the vendor map (default git clone will do) 0.3.9 or greater
+* Lessc by Leafo.net in the vendor map (default git clone will do) 0.4.0 or greater
 
 ## Installation
 

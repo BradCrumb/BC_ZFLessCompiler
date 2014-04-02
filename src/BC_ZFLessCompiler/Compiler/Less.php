@@ -63,14 +63,14 @@ class Less {
 *
 * @var string
 */
-    protected static $_minVersionPHP = '5.3';
+    protected static $_minVersionPHP = '5.3.3'; // Required by Leafo LessPHP
 
 /**
 * Minimum required Lessc.php version
 *
 * @var string
 */
-    protected static $_minVersionLessc = 'v0.3.9';
+    protected static $_minVersionLessc = 'v0.4.0';
 
 /**
  * Contains the indexed folders consisting of less-files
