@@ -318,39 +318,12 @@ class Less {
     		$this->_cssFolders['default'] = rtrim($_SERVER['DOCUMENT_ROOT'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR;
     	}
 
-    	/**
-    	 * Only the default index is required to exist
-    	 */
-	    if (!file_exists($this->_lessFolders['default'])) {
-	    	mkdir($this->_lessFolders['default']);
-	    }
-
-    	if (!file_exists($this->_cssFolders['default'])) {
-    		mkdir($this->_cssFolders['default']);
-    	}
-
         foreach ($this->_cssFolders as $folder) {
         	if (is_dir($folder) && !is_writable($folder)) {
         		throw new LessCompilerException(sprintf('"%s" is not writable!', $folder));
         	}
         }
     }
-
-    // public function processModules(\Zend\ServiceManager\ServiceManager $sm) {
-    //     $moduleManager = $sm->get('modulemanager');
-    //     $modules = $moduleManager->getLoadedModules();
-
-    //     unset(
-    //         $modules['Application'],
-    //         $modules['BC_ZFLessCompiler']
-    //     );
-
-    //     foreach ($modules as $module) 
-    //         // $moduleConfig = $module->getConfig();
-    //         // echo '<pre>';
-    //         // print_r($moduleConfig);
-    //     }
-    // }
 
 /**
  * Proxy method for generateCss
@@ -386,7 +359,7 @@ class Less {
                         $tmpLessFile = str_ireplace('.css', '.less', $this->_cssFolders[$key]);
                         if (file_put_contents($tmpLessFile, $lessCode)) {
                             if ($this->_autoCompileLess($tmpLessFile, $this->_cssFolders[$key])) {
-                                $generatedFiles[] = $cssFile;
+                                $generatedFiles[] = $this->_cssFolders[$key];
                             }
                             unlink($tmpLessFile);
                         } else {
