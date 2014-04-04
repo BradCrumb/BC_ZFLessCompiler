@@ -46,19 +46,26 @@ class Module implements
 
     // http://www.cnblogs.com/wkpilu/p/how_to_write_zf2_module.html < ook een optie als onderstaande bout is
     public function onBootstrap(\Zend\EventManager\Event $event) { 
+        
         $eventManager = $event->getApplication()->getEventManager();
         $eventManager->attach(MvcEvent::EVENT_FINISH, array($this, 'runCompiler'));
     }
 
     public function runCompiler($event) {
-        $serviceManager = $event->getApplication()->getServiceManager();
-        $config = $serviceManager->get(__NAMESPACE__ . 'Config');
+        $tmpFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5(time() . __NAMESPACE__) . '.tmp';
 
-        $lessCompiler = new LessCompiler($config);
-        //$lessCompiler->processModules($serviceManager);
-        $lessCompiler->setEnforcement(
-            $event->getRequest()->getQuery(LessCompiler::QUERY_PARAM_ENFORCEMENT, false)
-        );
-        $lessCompiler->run();
+        if (!file_exists($tmpFile)) {
+            $serviceManager = $event->getApplication()->getServiceManager();
+            $config = $serviceManager->get(__NAMESPACE__ . 'Config');
+
+            file_put_contents($tmpFile, 'is running');
+
+            $lessCompiler = new LessCompiler($config);
+            $lessCompiler->setEnforcement(
+                $event->getRequest()->getQuery(LessCompiler::QUERY_PARAM_ENFORCEMENT, false)
+            );
+            $lessCompiler->run();
+            unlink($tmpFile);
+        }
     }
 }
