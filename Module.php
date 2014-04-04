@@ -52,7 +52,7 @@ class Module implements
     }
 
     public function runCompiler($event) {
-        $tmpFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5(time() . __NAMESPACE__) . '.tmp';
+        $tmpFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5($_SERVER['DOCUMENT_ROOT'] . __NAMESPACE__) . '.tmp';
 
         if (!file_exists($tmpFile)) {
             $serviceManager = $event->getApplication()->getServiceManager();
