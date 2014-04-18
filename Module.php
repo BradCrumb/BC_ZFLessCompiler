@@ -1,6 +1,7 @@
 <?php
 namespace BC_ZFLessCompiler;
 
+use Zend\Console\Console;
 use Zend\ModuleManager\ModuleManager;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
@@ -48,7 +49,10 @@ class Module implements
     public function onBootstrap(\Zend\EventManager\Event $event) { 
         
         $eventManager = $event->getApplication()->getEventManager();
-        $eventManager->attach(MvcEvent::EVENT_FINISH, array($this, 'runCompiler'));
+
+	if (!Console::isConsole()) {
+	        $eventManager->attach(MvcEvent::EVENT_FINISH, array($this, 'runCompiler'));
+	}
     }
 
     public function runCompiler($event) {
