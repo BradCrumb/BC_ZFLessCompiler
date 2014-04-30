@@ -16,6 +16,8 @@ class Module implements
     ConfigProviderInterface,
     ServiceProviderInterface {
 
+        private $hasRun = false;
+
 	public function getAutoloaderConfig() {
 		return array(
 			'Zend\Loader\ClassMapAutoloader' => array(
@@ -46,30 +48,28 @@ class Module implements
     }
 
     // http://www.cnblogs.com/wkpilu/p/how_to_write_zf2_module.html < ook een optie als onderstaande bout is
-    public function onBootstrap(\Zend\EventManager\Event $event) { 
-        
-        $eventManager = $event->getApplication()->getEventManager();
+    public function onBootstrap(\Zend\EventManager\Event $event) {
+        $eventManager = $event->getApplication()->getEventManager()->getSharedManager();;
 
 	if (!Console::isConsole()) {
-	        $eventManager->attach(MvcEvent::EVENT_FINISH, array($this, 'runCompiler'));
+            $eventManager->attach('Zend\View\View', ViewEvent::EVENT_RENDERER_POST, function() use ($event) {
+                $this->runCompiler($event);
+            });
 	}
     }
 
     public function runCompiler($event) {
-        $tmpFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5($_SERVER['DOCUMENT_ROOT'] . __NAMESPACE__) . '.tmp';
-
-        if (!file_exists($tmpFile)) {
+        if (!$this->hasRun) {
             $serviceManager = $event->getApplication()->getServiceManager();
             $config = $serviceManager->get(__NAMESPACE__ . 'Config');
-
-            file_put_contents($tmpFile, 'is running');
 
             $lessCompiler = new LessCompiler($config);
             $lessCompiler->setEnforcement(
                 $event->getRequest()->getQuery(LessCompiler::QUERY_PARAM_ENFORCEMENT, false)
             );
             $lessCompiler->run();
-            unlink($tmpFile);
+
+            $this->hasRun = true;
         }
     }
 }
