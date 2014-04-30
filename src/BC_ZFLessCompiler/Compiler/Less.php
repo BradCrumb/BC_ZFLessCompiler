@@ -361,7 +361,9 @@ class Less {
                             if ($this->_autoCompileLess($tmpLessFile, $this->_cssFolders[$key])) {
                                 $generatedFiles[] = $this->_cssFolders[$key];
                             }
-                            unlink($tmpLessFile);
+                            if (file_exists($tmpLessFile)) {
+                                unlink($tmpLessFile);
+                            }
                         } else {
                             throw new LessCompilerException(sprintf('Could not write temporary Less file "%s"', $tmpLessFile));
                         }
