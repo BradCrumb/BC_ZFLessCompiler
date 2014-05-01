@@ -452,7 +452,7 @@ class Less {
         	'variables',
         	));
 
-        if ($settings['importDir'] && is_dir($settings['importDir'])) {
+        if ($settings['importDir']) {
         	$lesscExt->setImportDir((array)$settings['importDir']);
         }
 
