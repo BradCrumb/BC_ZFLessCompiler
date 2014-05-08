@@ -119,7 +119,7 @@ class Less {
  */
 	public function __construct(array $config = null) {
 		// Set the configuration option from all merged configuration files
-		$this->config = array_merge($this->config, $config);
+		$this->config = array_replace_recursive($this->config, $config);
 
 		// The the enabled status of this module
 		$this->enabled = $this->_getConfigurationValue('enabled', $this->enabled) || 
