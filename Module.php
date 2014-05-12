@@ -8,7 +8,7 @@ use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Stdlib\Hydrator\ClassMethods;
 use BC_ZFLessCompiler\Compiler\Less as LessCompiler;
-
+use Zend\View\ViewEvent;
 use Zend\Mvc\MvcEvent;
 
 class Module implements
@@ -47,7 +47,6 @@ class Module implements
         );
     }
 
-    // http://www.cnblogs.com/wkpilu/p/how_to_write_zf2_module.html < ook een optie als onderstaande bout is
     public function onBootstrap(\Zend\EventManager\Event $event) {
         $eventManager = $event->getApplication()->getEventManager()->getSharedManager();;
 

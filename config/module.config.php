@@ -1,34 +1,42 @@
 <?php
 /**
- * Default LessCompiler module settings
- */
+* Default LessCompiler module settings
+*/
 return array(
 	'BC_ZFLessCompiler' => array(
 		// Should the module be enabled or disabled for the current environment
-		'enabled' 			=> true,
+		'enabled' => true,
 		// Always compile the Less files (ignores the enabled option)
-		'autoRun'           => false,
-		// Set the path for the LessPHP files by Leafo (https://github.com/lessphp)
-        // Defaults to "modules/BC_ZFLessCompiler/vendor/leafo/lessphp" in the application's vendor map
-        // You can run "php composer.phar install" from the module's directory in a terminal to install Leafo LessPHP
-        'path_to_leafo_lessphp' =>  realpath(getcwd() . DIRECTORY_SEPARATOR . 'module/BC_ZFLessCompiler/vendor/leafo/lessphp'),
-		// Import directory: please use realpath(...) to get a valid directory
-		// ie. realpath(getcwd() . '/less/inc/');
-		'importDir'			=> null,
+		'autoRun' => false,
+		// Set the path for the LessPHP module
+		'pathToLessphp' => null,
 		// Where to look for Less files
-		'sourceFolder'      => null,
+		'sourceFolder' => null,
 		// Where to put the generated css
-		'targetFolder'      => null,
-		// lessphp compatible formatter
-		'formatter'         => 'compressed',
-		// Preserve comments or remove them
-		'preserveComments'  => null,
-		// Pass variables from php to Less
-		'variables'         => array(),
-		// Pass cache options as an array or pass even a complete 
-        // cache adapter which extends \Zend\Cache\Storage\Adapter\AbstractAdapter
-        // Configurable array options are the keys: name, ttl and namespace.
-        // Other array_keys will be ignored
-        'cache'             => null,
+		'targetFolder' => null,
+		// Use cache?
+		'useCache' => true,
+		// Global (without key) and sourcefolder (with same key as in sourceFolders array) specific variables
+		'variables' => array(
+			/* global variables for all sourcefolder-keys */
+			array(
+				'testColor' => 'yellow',
+			),
+			/* variables for "default" sourcefolder only */
+			'default' => array(
+				'textColor' => 'brown',
+			),
+		),
+		// Global (without key) and sourcefolder (with same key as in sourceFolders array) specific import directories
+		'importDirs' => array(
+			//array(/* global import directory for all sourcefolder-keys */),
+			//'default' => array(/* importdirs for "default" sourcefolder only */) => null // null >> don't forget this!
+		),
+		// LessPHP options
+		'options'   => array(
+			'compress' => true,
+			'sourceMap' => false,
+			'sourceMapToFile' => false,
+		),
 	),
 );
