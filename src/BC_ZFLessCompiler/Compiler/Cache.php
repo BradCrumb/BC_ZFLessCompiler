@@ -101,11 +101,16 @@ class Cache extends \Less_Cache {
 				continue;
 			}
 
+			//Cant get the right link to the sourcefile in the map, so this doesn't to sh....
+			if ($parser_options['sourceMap']) {
+				$parser->setOption('sourceMapRootpath', dirname($file_path));
+				$parser->SetOption('sourceMapBasepath', dirname($file_path));
+			}
+
 			$parser->ParseFile( $file_path, $uri_or_less );
 		}
 
 		$compiled = $parser->getCss();
-
 
 		$less_files = $parser->allParsedFiles();
 

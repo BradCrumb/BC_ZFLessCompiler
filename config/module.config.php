@@ -38,6 +38,7 @@ return array(
 			'compress' => true,
 			'sourceMap' => false,
 			'sourceMapToFile' => false,
+			'outputSourceFiles' => false /* not working well */,
 		),
 	),
 );

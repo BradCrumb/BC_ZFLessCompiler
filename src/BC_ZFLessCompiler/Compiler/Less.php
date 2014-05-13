@@ -1,7 +1,6 @@
 <?php
 namespace BC_ZFLessCompiler\Compiler;
 
-// use Zend\Cache\StorageFactory as Cache;
 use BC_ZFLessCompiler\Exception\LessCompilerException;
 
 /**
@@ -357,8 +356,8 @@ class Less {
 
 					$extraOptions = array();
 					if ($options['sourceMap']) {
-						$extraOptions['sourceMapWriteTo']  = str_ireplace('.css', '.map', $path);
-						$extraOptions['sourceMapURL'] = str_ireplace(array('.css', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
+						$extraOptions['sourceMapWriteTo']	= str_ireplace('.css', '.map', $path);
+						$extraOptions['sourceMapURL']		= str_ireplace(array('.css', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
 					}
 
 					if ($useCache) {
@@ -421,8 +420,9 @@ class Less {
 						} else {
 							$extraOptions = array();
 							if ($options['sourceMap']) {
-								$extraOptions['sourceMapWriteTo']  = str_ireplace('.less', '.map', $path);
-								$extraOptions['sourceMapURL'] = str_ireplace(array('.less', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
+								$extraOptions['sourceMapWriteTo']	= str_ireplace('.less', '.map', $path);
+								$extraOptions['sourceMapURL']		= str_ireplace(array('.less', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
+    								$extraOptions['sourceMapBasepath']	= dirname(dirname($path));
     							}
 
     							if ($useCache) {
