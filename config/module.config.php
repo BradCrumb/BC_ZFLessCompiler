@@ -17,15 +17,16 @@ return array(
 		// Use cache?
 		'useCache' => true,
 		// Global (without key) and sourcefolder (with same key as in sourceFolders array) specific variables
+		'cacheDirectory' => null,
 		'variables' => array(
 			/* global variables for all sourcefolder-keys */
 			array(
-				'testColor' => 'yellow',
+				
 			),
 			/* variables for "default" sourcefolder only */
-			'default' => array(
-				'textColor' => 'brown',
-			),
+			// 'default' => array(
+			// 	'textColor' => 'brown',
+			// ),
 		),
 		// Global (without key) and sourcefolder (with same key as in sourceFolders array) specific import directories
 		'importDirs' => array(

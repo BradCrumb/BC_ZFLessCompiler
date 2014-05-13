@@ -34,6 +34,8 @@ class Less {
 		'targetFolder' => null,
 		// Use cache?
 		'useCache' => true,
+		// Cache directory, is useCache is true it defaults to the target Folder  and subdirectory 'cache'
+		'cacheDirectory' => null,
 		// Global (without key) and sourcefolder (with same key as in sourceFolders array) specific variables
 		'variables' => array(
 			//array(/* global variables for all sourcefolder-keys */),
@@ -71,7 +73,15 @@ class Less {
 *
 * @var string
 */
-	protected static $_minVersionPHP = '5.3.3'; // Required by Leafo LessPHP
+	protected static $_minVersionPHP = '5.3.3'; // Required by LessPHP
+
+/**
+ * Minimum required LessPHP version;
+ *
+ * @see http://lessphp.gpeasy.com/
+ * @var string
+ */
+	protected static $_minVersionLessc = '1.7.0.1';
 
 /**
  * Contains the indexed folders consisting of less-files
@@ -229,13 +239,11 @@ class Less {
 			throw new LessCompilerException(sprintf('Less.php file "%s" does not exist!', $file));
 		}
 
-		// if (!class_exists('lessc')) {
-  //           require_once(self::$_leafoLessPHPfile);
-  //       }
+		require_once($path . DIRECTORY_SEPARATOR  . 'Version.php');
 
-		// if (\lessc::$VERSION < self::$_minVersionLessc) {
-  //           throw new LessCompilerException(sprintf('Leafo LessPHP version %s or higher is required!', self::$_minVersionLessc));
-  //       }
+		if (\Less_Version::version < self::$_minVersionLessc) {
+			throw new LessCompilerException(sprintf('LessPHP version %s or higher is required!', self::$_minVersionLessc));
+		}
 	}
 
 /**
@@ -306,7 +314,7 @@ class Less {
 	}
 
 /**
- * Proxy method for generateCss
+ * Run the compiler if enabled
  *
  * @return array
  */
@@ -323,6 +331,13 @@ class Less {
 			$sourceMapToFile = (bool)$options['sourceMapToFile'];
 			$options['sourceMapToFile'];
 			unset($options['sourceMapToFile']);
+
+			if ($useCache) {
+				$cacheDir = $this->_getConfigurationValue('cacheDirectory');
+				if ($cacheDir && (!is_dir($cacheDir) || !is_writable($cacheDir))) {
+					throw new LessCompilerException('When you supply a Less Caching directory, it should exist and be writable!');
+				}
+			}
 
 			foreach ($this->_lessFolders as $key => $lessFolder) {
 				$parser = new \Less_Parser($options);
@@ -342,12 +357,20 @@ class Less {
 
 					$extraOptions = array();
 					if ($options['sourceMap']) {
-						$extraOptions['sourceMapWriteTo']  = str_ireplace('.less', '.map', $path);
-						$extraOptions['sourceMapURL'] = str_ireplace('.less', '.map', $path);
+						$extraOptions['sourceMapWriteTo']  = str_ireplace('.css', '.map', $path);
+						$extraOptions['sourceMapURL'] = str_ireplace(array('.css', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
 					}
 
 					if ($useCache) {
-						$extraOptions['cache_dir'] = dirname($path);
+						// Cache directory, is useCache is true it defaults to the target Folder  and subdirectory 'cache'
+						if (!$cacheDir) {
+							$cacheDir = dirname($path) . DIRECTORY_SEPARATOR . 'cache';
+							if (!is_dir($cacheDir)) {
+								mkdir($cacheDir, 0777);
+							}
+						}
+
+						$extraOptions['cache_dir'] = $cacheDir;
 					}
 
 					Cache::$cache_dir = $extraOptions['cache_dir'];
@@ -369,8 +392,6 @@ class Less {
 
 						foreach ($files as $file) {
 							if (!$file->isDir()) {
-								// Add file to parser
-								//$parser->parseFile($file->getPathName());
 								$lessFiles[$file->getPathName()] = null;
 							}
 						}
@@ -401,11 +422,18 @@ class Less {
 							$extraOptions = array();
 							if ($options['sourceMap']) {
 								$extraOptions['sourceMapWriteTo']  = str_ireplace('.less', '.map', $path);
-								$extraOptions['sourceMapURL'] = str_ireplace('.less', '.map', $path);
+								$extraOptions['sourceMapURL'] = str_ireplace(array('.less', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
     							}
 
     							if ($useCache) {
-    								$extraOptions['cache_dir'] = dirname($path);
+								if (!$cacheDir) {
+									$cacheDir = dirname($path) . DIRECTORY_SEPARATOR . 'cache';
+									if (!is_dir($cacheDir)) {
+										mkdir($cacheDir, 0777);
+									}
+								}
+
+								$extraOptions['cache_dir'] = $cacheDir;
     							}
 
 							Cache::$cache_dir = $extraOptions['cache_dir'];
@@ -433,71 +461,6 @@ class Less {
 
 
 		}
-	}
-
-/**
- * Generate the CSS files
- *
- * @return array list of generated files
- */
-	protected function generateCss() {
-die(__METHOD__);
-		$generatedFiles = array();
-
-		if ($this->enabled) {
-			foreach ($this->_lessFolders as $key => $lessFolder) {
-				if (is_array($lessFolder)) {
-					$lessCode = '';
-					foreach ($lessFolder as $lFolder) {
-						$files = $this->getFilesFromDirectory($lFolder);
-
-						foreach ($files as $file) {
-							$lessCode .= file_get_contents($file) . PHP_EOL;
-						}
-					}
-
-					// Let's generate a temporaty Less file
-					if (strlen(trim($lessCode)) > 3) {
-						$tmpLessFile = str_ireplace('.css', '.less', $this->_cssFolders[$key]);
-						if (file_put_contents($tmpLessFile, $lessCode)) {
-							if ($this->_autoCompileLess($tmpLessFile, $this->_cssFolders[$key])) {
-								$generatedFiles[] = $this->_cssFolders[$key];
-							}
-							if (file_exists($tmpLessFile)) {
-								unlink($tmpLessFile);
-							}
-						} else {
-							throw new LessCompilerException(sprintf('Could not write temporary Less file "%s"', $tmpLessFile));
-						}
-					}
-				} else {
-					$files = $this->getFilesFromDirectory($lessFolder);
-
-					foreach ($files as $file) {
-						$path = str_ireplace(
-									rtrim($lessFolder, DIRECTORY_SEPARATOR),
-									null,
-									rtrim($file->getRealPath(), DIRECTORY_SEPARATOR)
-								);
-
-						$path = rtrim($this->_cssFolders[$key], DIRECTORY_SEPARATOR) . $path;
-						if ($file->isDir()) {
-							if (!is_dir($path)) {
-								mkdir($path, 0777);
-							}
-						} else {
-							$cssFile = str_ireplace('.less', '.css', $path);
-
-							if ($this->_autoCompileLess($file->getRealPath(), $cssFile)) {
-								$generatedFiles[] = $cssFile;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return $generatedFiles;
 	}
 
 /**
