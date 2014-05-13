@@ -17,7 +17,11 @@ class Cache extends \Less_Cache {
  * @param boolean $use_cache Set to false to regenerate the css file
  * @return string Name of the css file or boolean
  */
-	public static function Check( $less_files, $parser_options = array(), $use_cache = true, $importDirs, $variables){
+	public static function Check( $less_files, $parser_options = array(), $use_cache = true, $importDirs, $variables) {
+		if (!$use_cache) {
+			return self::Get( $less_files, $parser_options, $use_cache);
+		}
+
 		//check $cache_dir
 		if( isset($parser_options['cache_dir']) ){
 			\Less_Cache::$cache_dir = $parser_options['cache_dir'];

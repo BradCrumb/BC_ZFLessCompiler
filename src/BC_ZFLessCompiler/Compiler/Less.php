@@ -370,9 +370,9 @@ class Less {
 						}
 
 						$extraOptions['cache_dir'] = $cacheDir;
+						Cache::$cache_dir = $extraOptions['cache_dir'];
 					}
 
-					Cache::$cache_dir = $extraOptions['cache_dir'];
 					if ($extraOptions) {
 						$options = array_replace_recursive($options, $extraOptions);
 					}
@@ -396,10 +396,22 @@ class Less {
 						}
 					}
 
-					$css_file_name = Cache::Check($lessFiles, $options, $useCache, $importDirs, $variables);
+					if ($useCache) {
+						$css_file_name = Cache::Check($lessFiles, $options, $useCache, $importDirs, $variables);
 
-					if (is_string($css_file_name)) {
-						copy($extraOptions['cache_dir'] . DIRECTORY_SEPARATOR . $css_file_name, $path);
+						if (is_string($css_file_name)) {
+							copy($extraOptions['cache_dir'] . DIRECTORY_SEPARATOR . $css_file_name, $path);
+						}
+					} else {
+						$parser->SetOptions($options);
+						$parser->SetImportDirs($importDirs);
+						$parser->ModifyVars($variables);
+
+						foreach ($lessFiles as $file => $value) {
+							$parser->parseFile($file);	
+						}
+
+						file_put_contents($path, $parser->getCss());
 					}
 				} else {
 					$files = $this->getFilesFromDirectory($lessFolder);
@@ -422,7 +434,6 @@ class Less {
 							if ($options['sourceMap']) {
 								$extraOptions['sourceMapWriteTo']	= str_ireplace('.less', '.map', $path);
 								$extraOptions['sourceMapURL']		= str_ireplace(array('.less', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
-    								$extraOptions['sourceMapBasepath']	= dirname(dirname($path));
     							}
 
     							if ($useCache) {
@@ -434,9 +445,9 @@ class Less {
 								}
 
 								$extraOptions['cache_dir'] = $cacheDir;
+								Cache::$cache_dir = $extraOptions['cache_dir'];
     							}
 
-							Cache::$cache_dir = $extraOptions['cache_dir'];
 							if ($extraOptions) {
 								$options = array_replace_recursive($options, $extraOptions);
 							}
@@ -449,10 +460,21 @@ class Less {
 								array_merge($this->_variables, $this->config['variables'][$key]):
 								$this->_variables;
 
-							$css_file_name = Cache::Check(array($file->getRealPath() => null), $options, $useCache, $importDirs, $variables);
+							if ($useCache) {
+								$lessFiles = array($file->getRealPath() => null);
+								$css_file_name = Cache::Check($lessFiles, $options, $useCache, $importDirs, $variables);
 
-							if (is_string($css_file_name)) {
-								copy($extraOptions['cache_dir'] . DIRECTORY_SEPARATOR . $css_file_name, str_ireplace('.less', '.css', $path));
+								if (is_string($css_file_name)) {
+									copy($extraOptions['cache_dir'] . DIRECTORY_SEPARATOR . $css_file_name, str_ireplace('.less', '.css', $path));
+								}
+							} else {
+								$parser->SetOptions($options);
+								$parser->SetImportDirs($importDirs);
+								$parser->ModifyVars($variables);
+
+								$parser->parseFile($file->getRealPath());
+
+								file_put_contents(str_ireplace('.less', '.css', $path), $parser->getCss());
 							}
 						}
 					}
