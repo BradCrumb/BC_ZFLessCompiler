@@ -333,6 +333,7 @@ class Less {
 			$options['sourceMapToFile'];
 			unset($options['sourceMapToFile']);
 
+			// Is there a global cache directory?
 			if ($useCache) {
 				$cacheDir = $this->_getConfigurationValue('cacheDirectory');
 				if ($cacheDir && (!is_dir($cacheDir) || !is_writable($cacheDir))) {
@@ -365,13 +366,15 @@ class Less {
 					if ($useCache) {
 						// Cache directory, is useCache is true it defaults to the target Folder  and subdirectory 'cache'
 						if (!$cacheDir) {
-							$cacheDir = dirname($path) . DIRECTORY_SEPARATOR . 'cache';
-							if (!is_dir($cacheDir)) {
-								mkdir($cacheDir, 0777);
+							$specificCacheDir = dirname($path) . DIRECTORY_SEPARATOR . 'cache';
+							if (!is_dir($specificCacheDir)) {
+								mkdir($specificCacheDir, 0777);
 							}
+						} else {
+							$specificCacheDir = $cacheDir;
 						}
 
-						$extraOptions['cache_dir'] = $cacheDir;
+						$extraOptions['cache_dir'] = $specificCacheDir;
 						Cache::$cache_dir = $extraOptions['cache_dir'];
 					}
 
@@ -438,17 +441,20 @@ class Less {
 								$extraOptions['sourceMapURL']		= str_ireplace(array('.less', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
     							}
 
-    							if ($useCache) {
+							if ($useCache) {
+								// Cache directory, is useCache is true it defaults to the target Folder  and subdirectory 'cache'
 								if (!$cacheDir) {
-									$cacheDir = dirname($path) . DIRECTORY_SEPARATOR . 'cache';
-									if (!is_dir($cacheDir)) {
-										mkdir($cacheDir, 0777);
+									$specificCacheDir = dirname($path) . DIRECTORY_SEPARATOR . 'cache';
+									if (!is_dir($specificCacheDir)) {
+										mkdir($specificCacheDir, 0777);
 									}
+								} else {
+									$specificCacheDir = $cacheDir;
 								}
 
-								$extraOptions['cache_dir'] = $cacheDir;
+								$extraOptions['cache_dir'] = $specificCacheDir;
 								Cache::$cache_dir = $extraOptions['cache_dir'];
-    							}
+							}
 
 							if ($extraOptions) {
 								$options = array_replace_recursive($options, $extraOptions);
