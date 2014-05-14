@@ -37,12 +37,14 @@ class Less {
 		'cacheDirectory' => null,
 		// Global (without key) and sourcefolder (with same key as in sourceFolders array) specific variables
 		'variables' => array(
-			//array(/* global variables for all sourcefolder-keys */),
+			/* global variables for all sourcefolder-keys */
+			'global' => array(),
 			//'default' => array(/* variables for "default" sourcefolder only */)
 		),
 		// Global (without key) and sourcefolder (with same key as in sourceFolders array) specific import directories
 		'importDirs' => array(
-			//array(/* global import directory for all sourcefolder-keys */),
+			/* global import directory for all sourcefolder-keys */
+			'global' => array(),
 			//'default' => array(/* importdirs for "default" sourcefolder only */)
 		),
 		// LessPHP options
@@ -140,8 +142,8 @@ class Less {
 		// Set the configuration option from all merged configuration files
 		$this->config = array_replace_recursive($this->config, $config);
 
-		$this->_importDir = array_shift($this->config['importDirs']);
-		$this->_variables = array_shift($this->config['variables']);
+		$this->_importDir = $this->config['importDirs']['global'];
+		$this->_variables = $this->config['variables']['global'];
 
 		// The the enabled status of this module
 		$this->enabled = $this->_getConfigurationValue('enabled', $this->enabled) ||
@@ -408,7 +410,7 @@ class Less {
 						$parser->ModifyVars($variables);
 
 						foreach ($lessFiles as $file => $value) {
-							$parser->parseFile($file);	
+							$parser->parseFile($file);
 						}
 
 						file_put_contents($path, $parser->getCss());
