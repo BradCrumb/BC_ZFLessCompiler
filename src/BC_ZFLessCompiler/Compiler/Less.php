@@ -99,20 +99,6 @@ class Less {
 	protected $_cssFolders;
 
 /**
- * General import directory
- *
- * @var string
- */
-	protected $_importDir;
-
-/**
- * General variables
- *
- * @var array
- */
-	protected $_variables;
-
-/**
  * Status whether component is enabled or disabled
  *
  * @var boolean
@@ -142,9 +128,6 @@ class Less {
 		// Set the configuration option from all merged configuration files
 		$this->config = array_replace_recursive($this->config, $config);
 
-		$this->_importDir = $this->config['importDirs']['global'];
-		$this->_variables = $this->config['variables']['global'];
-
 		// The the enabled status of this module
 		$this->enabled = $this->_getConfigurationValue('enabled', $this->enabled) ||
 						 $this->_getConfigurationValue('autoRun', false);
@@ -168,12 +151,18 @@ class Less {
  *
  * @param  string $key
  * @param  $defaultReturnValue
- * @return unknown
+ * @return misc
  */
 	protected function _getConfigurationValue($key, $defaultReturnValue = null) {
 		return array_key_exists($key, $this->config)? $this->config[$key]: $defaultReturnValue;
 	}
 
+/**
+ * Return a set of configuration values at once
+ *
+ * @param array $keys
+ * @return array
+ */
 	protected function _getConfigurationValues(array $keys) {
 		$return = array();
 
@@ -257,7 +246,7 @@ class Less {
 	}
 
 /**
- * @todo: process Zend modules? Or is this something that is up to the user?
+ * Set all source and target folders
  *
  * @throws LessCompilerException
  * @return void
@@ -345,10 +334,10 @@ class Less {
 				$parser = new \Less_Parser($options);
 
 				// set the global variables
-				$parser->ModifyVars($this->_variables);
+				$parser->ModifyVars($this->config['variables']['global']);
 
 				// set the global import directories
-				$parser->SetImportDirs($this->_importDir);
+				$parser->SetImportDirs($this->config['importDirs']['global']);
 
 				if (is_array($lessFolder)) {
 					if (!is_string($this->_cssFolders[$key])) {
@@ -383,12 +372,12 @@ class Less {
 					}
 
 					$importDirs = (isset($this->config['importDirs'][$key]))?
-						array_merge($this->_importDir, $this->config['importDirs'][$key]):
-						$this->_importDir;
+						array_merge($this->config['importDirs']['global'], $this->config['importDirs'][$key]):
+						$this->config['importDirs']['global'];
 
 					$variables = (isset($this->config['variables'][$key]))?
-						array_merge($this->_variables, $this->config['variables'][$key]):
-						$this->_variables;
+						array_merge($this->config['variables']['global'], $this->config['variables'][$key]):
+						$this->config['variables']['global'];
 
 					$lessFiles = array();
 					foreach ($lessFolder as $lessDir) {
@@ -461,12 +450,12 @@ class Less {
 							}
 
 							$importDirs = (isset($this->config['importDirs'][$key]))?
-								array_merge($this->_importDir, $this->config['importDirs'][$key]):
-								$this->_importDir;
+								array_merge($this->config['importDirs']['global'], $this->config['importDirs'][$key]):
+								$this->config['importDirs']['global'];
 
 							$variables = (isset($this->config['variables'][$key]))?
-								array_merge($this->_variables, $this->config['variables'][$key]):
-								$this->_variables;
+								array_merge($this->config['variables']['global'], $this->config['variables'][$key]):
+								$this->config['variables']['global'];
 
 							if ($useCache) {
 								$lessFiles = array($file->getRealPath() => null);
