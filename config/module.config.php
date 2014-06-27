@@ -2,6 +2,9 @@
 /**
 * Default LessCompiler module settings
 */
+
+$composerPath = (is_dir(__DIR__ . '/../../../oyejorge/less.php/lib/Less/'))? __DIR__ . '/../../../oyejorge/less.php/lib/Less/' : null;
+
 return array(
 	'BC_ZFLessCompiler' => array(
 		// Should the module be enabled or disabled for the current environment
@@ -9,7 +12,7 @@ return array(
 		// Always compile the Less files (ignores the enabled option)
 		'autoRun' => false,
 		// Set the path for the LessPHP module
-		'pathToLessphp' => null,
+		'pathToLessphp' => $composerPath,
 		// Where to look for Less files
 		'sourceFolder' => null,
 		// Where to put the generated css
@@ -21,7 +24,7 @@ return array(
 		'variables' => array(
 			/* global variables for all sourcefolder-keys */
 			array(
-				
+
 			),
 			/* variables for "default" sourcefolder only */
 			// 'default' => array(
