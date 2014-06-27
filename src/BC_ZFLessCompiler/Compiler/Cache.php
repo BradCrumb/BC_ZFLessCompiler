@@ -19,6 +19,8 @@ class Cache extends \Less_Cache {
  */
 	public static function Check( $less_files, $parser_options = array(), $use_cache = true, $importDirs, $variables) {
 		if (!$use_cache) {
+			$parser_options['import_dirs'] = $importDirs;
+			$parser_options['variables'] = $variables;
 			return self::Get( $less_files, $parser_options, $use_cache);
 		}
 

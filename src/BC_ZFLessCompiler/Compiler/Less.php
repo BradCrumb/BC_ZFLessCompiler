@@ -39,20 +39,21 @@ class Less {
 		'variables' => array(
 			/* global variables for all sourcefolder-keys */
 			'global' => array(),
-			//'default' => array(/* variables for "default" sourcefolder only */)
+			//'__default' => array(/* variables for "default" sourcefolder only */)
 		),
 		// Global (without key) and sourcefolder (with same key as in sourceFolders array) specific import directories
 		'importDirs' => array(
 			/* global import directory for all sourcefolder-keys */
 			'global' => array(),
-			//'default' => array(/* importdirs for "default" sourcefolder only */)
+			//'__default' => array(/* importdirs for "default" sourcefolder only */)
 		),
 		// LessPHP options
 		'options' => array(
 			'compress' => true,
 			'sourceMap' => false,
 			'sourceMapToFile' => false,
-		),
+			'relativeUrls' => false
+		)
 	);
 
 /**
@@ -257,8 +258,8 @@ class Less {
 
 		if ($sourceFolder && $targetFolder) {
 			if (is_array($sourceFolder)) {
-				if (!array_key_exists('default', $sourceFolder)) {
-					throw new LessCompilerException('Please supply a default sourcefolder [key "default" must exist! or it should be set as a string]');
+				if (!array_key_exists('__default', $sourceFolder)) {
+					throw new LessCompilerException('Please supply a default sourcefolder [key "__default" must exist! or it should be set as a string]');
 				}
 
 				if (!is_array($targetFolder)) {
@@ -288,12 +289,12 @@ class Less {
 				}
 			} elseif (is_string($sourceFolder) && is_dir($sourceFolder) &&
 					  is_string($targetFolder) && is_dir($targetFolder)) {
-				 $this->_lessFolders['default'] = realpath($sourceFolder) . DIRECTORY_SEPARATOR;
-				 $this->_cssFolders['default'] = realpath($targetFolder) . DIRECTORY_SEPARATOR;
+				 $this->_lessFolders['__default'] = realpath($sourceFolder) . DIRECTORY_SEPARATOR;
+				 $this->_cssFolders['__default'] = realpath($targetFolder) . DIRECTORY_SEPARATOR;
 			}
 		} else {
-			$this->_lessFolders['default'] = getcwd()  . DIRECTORY_SEPARATOR . 'less' . DIRECTORY_SEPARATOR;
-			$this->_cssFolders['default'] = rtrim($_SERVER['DOCUMENT_ROOT'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR;
+			$this->_lessFolders['__default'] = getcwd()  . DIRECTORY_SEPARATOR . 'less' . DIRECTORY_SEPARATOR;
+			$this->_cssFolders['__default'] = rtrim($_SERVER['DOCUMENT_ROOT'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR;
 		}
 
 		foreach ($this->_cssFolders as $folder) {
@@ -308,178 +309,173 @@ class Less {
  *
  * @return array
  */
-	public function run(){
+	public function run() {
 		if ($this->enabled) {
 			require_once(self::$_lessPHPfile);
 
-			if (!$this->_forceCompiling) {
-				$useCache = (bool)$this->config['useCache'];
-			}
+			$useCache = $this->_forceCompiling?
+				false:
+				(bool)$this->config['useCache'];
 
 			$options = $this->config['options'];
-
 			$sourceMapToFile = (bool)$options['sourceMapToFile'];
 			$options['sourceMapToFile'];
 			unset($options['sourceMapToFile']);
 
-			// Is there a global cache directory?
-			if ($useCache) {
-				$cacheDir = $this->_getConfigurationValue('cacheDirectory');
-				if ($cacheDir && (!is_dir($cacheDir) || !is_writable($cacheDir))) {
-					throw new LessCompilerException('When you supply a Less Caching directory, it should exist and be writable!');
-				}
-			}
+			// Order by keys so __default is the first one to be treated
+			ksort($this->_lessFolders);
+			ksort($this->config['variables']);
+			ksort($this->config['importDirs']);
 
 			foreach ($this->_lessFolders as $key => $lessFolder) {
 				$parser = new \Less_Parser($options);
 
 				// set the global variables
-				$parser->ModifyVars($this->config['variables']['global']);
-
-				// set the global import directories
-				$parser->SetImportDirs($this->config['importDirs']['global']);
-
-				if (is_array($lessFolder)) {
-					if (!is_string($this->_cssFolders[$key])) {
-						throw new LessCompilerException('Target should be a single stylesheet file!');
-					}
-
-					$path = $this->_cssFolders[$key];
-
-					$extraOptions = array();
-					if ($options['sourceMap']) {
-						$extraOptions['sourceMapWriteTo']	= str_ireplace('.css', '.map', $path);
-						$extraOptions['sourceMapURL']		= str_ireplace(array('.css', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
-					}
-
-					if ($useCache) {
-						// Cache directory, is useCache is true it defaults to the target Folder  and subdirectory 'cache'
-						if (!$cacheDir) {
-							$specificCacheDir = dirname($path) . DIRECTORY_SEPARATOR . 'cache';
-							if (!is_dir($specificCacheDir)) {
-								mkdir($specificCacheDir, 0777);
-							}
-						} else {
-							$specificCacheDir = $cacheDir;
-						}
-
-						$extraOptions['cache_dir'] = $specificCacheDir;
-						Cache::$cache_dir = $extraOptions['cache_dir'];
-					}
-
-					if ($extraOptions) {
-						$options = array_replace_recursive($options, $extraOptions);
-					}
-
-					$importDirs = (isset($this->config['importDirs'][$key]))?
-						array_merge($this->config['importDirs']['global'], $this->config['importDirs'][$key]):
-						$this->config['importDirs']['global'];
-
-					$variables = (isset($this->config['variables'][$key]))?
+				$variables = (isset($this->config['variables'][$key]))?
 						array_merge($this->config['variables']['global'], $this->config['variables'][$key]):
 						$this->config['variables']['global'];
+				$parser->ModifyVars($variables);
 
-					$lessFiles = array();
-					foreach ($lessFolder as $lessDir) {
-						$files = $this->getFilesFromDirectory($lessDir);
+				// set the global import directories
+				$importDirs = (isset($this->config['importDirs'][$key]))?
+						array_merge($this->config['importDirs']['global'], $this->config['importDirs'][$key]):
+						$this->config['importDirs']['global'];
+				$parser->SetImportDirs($importDirs);
 
-						foreach ($files as $file) {
-							if (!$file->isDir()) {
-								$lessFiles[$file->getPathName()] = null;
-							}
-						}
-					}
+				$generateCallback = is_array($lessFolder)?
+					'compileMultipleToSingleCss':
+					'compileFolder';
 
-					if ($useCache) {
-						$css_file_name = Cache::Check($lessFiles, $options, $useCache, $importDirs, $variables);
+				$this->$generateCallback(array(
+					'importDirs' => $importDirs,
+					'useCache' => $useCache,
+					'key' => $key,
+					'parser' => $parser,
+					'lessFolder' => $lessFolder,
+					'variables' => $variables,
+					'options' => $options
+				));
+			}
+		}
+	}
 
-						if (is_string($css_file_name)) {
-							copy($extraOptions['cache_dir'] . DIRECTORY_SEPARATOR . $css_file_name, $path);
-						}
-					} else {
-						$parser->SetOptions($options);
-						$parser->SetImportDirs($importDirs);
-						$parser->ModifyVars($variables);
+/**
+ * Compile Multiple Less files to a single CSS
+ */
+	public function compileMultipleToSingleCss($opts = array()) {
+		extract($opts);
 
-						foreach ($lessFiles as $file => $value) {
-							$parser->parseFile($file);
-						}
+		if (!is_string($this->_cssFolders[$key])) {
+			throw new LessCompilerException('Target should be a single stylesheet file!');
+		}
 
-						file_put_contents($path, $parser->getCss());
-					}
-				} else {
-					$files = $this->getFilesFromDirectory($lessFolder);
+		$path = $this->_cssFolders[$key];
 
-					foreach ($files as $file) {
-						$path = str_ireplace(
-									rtrim($lessFolder, DIRECTORY_SEPARATOR),
-									null,
-									rtrim($file->getRealPath(), DIRECTORY_SEPARATOR)
-								);
+		$lessFiles = array();
 
-						$path = rtrim($this->_cssFolders[$key], DIRECTORY_SEPARATOR) . $path;
+		foreach ($lessFolder as $lessDir) {
+			$files = $this->getFilesFromDirectory($lessDir);
 
-						if ($file->isDir()) {
-							if (!is_dir($path)) {
-								mkdir($path, 0777);
-							}
-						} else {
-							$extraOptions = array();
-							if ($options['sourceMap']) {
-								$extraOptions['sourceMapWriteTo']	= str_ireplace('.less', '.map', $path);
-								$extraOptions['sourceMapURL']		= str_ireplace(array('.less', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
-    							}
-
-							if ($useCache) {
-								// Cache directory, is useCache is true it defaults to the target Folder  and subdirectory 'cache'
-								if (!$cacheDir) {
-									$specificCacheDir = dirname($path) . DIRECTORY_SEPARATOR . 'cache';
-									if (!is_dir($specificCacheDir)) {
-										mkdir($specificCacheDir, 0777);
-									}
-								} else {
-									$specificCacheDir = $cacheDir;
-								}
-
-								$extraOptions['cache_dir'] = $specificCacheDir;
-								Cache::$cache_dir = $extraOptions['cache_dir'];
-							}
-
-							if ($extraOptions) {
-								$options = array_replace_recursive($options, $extraOptions);
-							}
-
-							$importDirs = (isset($this->config['importDirs'][$key]))?
-								array_merge($this->config['importDirs']['global'], $this->config['importDirs'][$key]):
-								$this->config['importDirs']['global'];
-
-							$variables = (isset($this->config['variables'][$key]))?
-								array_merge($this->config['variables']['global'], $this->config['variables'][$key]):
-								$this->config['variables']['global'];
-
-							if ($useCache) {
-								$lessFiles = array($file->getRealPath() => null);
-								$css_file_name = Cache::Check($lessFiles, $options, $useCache, $importDirs, $variables);
-
-								if (is_string($css_file_name)) {
-									copy($extraOptions['cache_dir'] . DIRECTORY_SEPARATOR . $css_file_name, str_ireplace('.less', '.css', $path));
-								}
-							} else {
-								$parser->SetOptions($options);
-								$parser->SetImportDirs($importDirs);
-								$parser->ModifyVars($variables);
-
-								$parser->parseFile($file->getRealPath());
-
-								file_put_contents(str_ireplace('.less', '.css', $path), $parser->getCss());
-							}
-						}
-					}
+			foreach ($files as $file) {
+				if (!$file->isDir()) {
+					$lessFiles[$file->getPathName()] = null;
 				}
 			}
-
-
 		}
+
+		$options = $this->getOptions(array(
+			'options' => $options,
+			'path' => $path
+		));
+
+		$this->compileToCache(array(
+			'importDirs' => $importDirs,
+			'lessFiles' => $lessFiles,
+			'useCache' => $useCache,
+			'variables' => $variables,
+			'cacheDir' => $this->getCacheDir($useCache, $path),
+			'path' => $path,
+			'options' => $options
+		));
+	}
+
+	public function compileFolder($opts = array()) {
+		extract($opts);
+		$files = $this->getFilesFromDirectory($lessFolder);
+		foreach ($files as $file) {
+			$path = str_ireplace(
+				rtrim($lessFolder, DIRECTORY_SEPARATOR),
+				null,
+				rtrim($file->getRealPath(), DIRECTORY_SEPARATOR)
+			);
+
+			$path = rtrim($this->_cssFolders[$key], DIRECTORY_SEPARATOR) . $path;
+
+			if ($file->isDir()) {
+				if (!is_dir($path)) {
+					mkdir($path, 0777);
+				}
+			} else {
+				$path = str_replace('.less', '.css', $path);
+				$options = $this->getOptions(array(
+					'options' => $options,
+					'path' => $path
+				));
+
+				$lessFiles = array($file->getRealPath() => null);
+
+				$this->compileToCache(array(
+					'importDirs' => $importDirs,
+					'lessFiles' => $lessFiles,
+					'useCache' => $useCache,
+					'variables' => $variables,
+					'cacheDir' => $this->getCacheDir($useCache, $path),
+					'path' => $path,
+					'options' => $options
+				));
+			}
+		}
+	}
+
+/**
+ * Compile Cache
+ */
+	protected function compileToCache($opts) {
+		extract($opts);
+
+		$cssFileName = Cache::Check($lessFiles, array_merge($options, array('cache_dir' => $cacheDir)), $useCache, $importDirs, $variables);
+
+		if (is_string($cssFileName)) {
+			copy($cacheDir . DIRECTORY_SEPARATOR . $cssFileName, $path);
+		}
+	}
+
+
+	protected function getOptions($opts = array()) {
+		extract($opts);
+
+		$extraOptions = array();
+		if ($options['sourceMap']) {
+			$extraOptions['sourceMapWriteTo']	= str_ireplace('.css', '.map', $path);
+			$extraOptions['sourceMapURL']	= str_ireplace(array('.css', $_SERVER['DOCUMENT_ROOT']), array('.map', null), $path);
+		}
+
+		$options = array_replace_recursive($options, $extraOptions);
+
+		return $options;
+	}
+
+	protected function getCacheDir($useCache = false, $path) {
+		// Use the global cache directory, if it doesn't exist try to create it
+		$cacheDir = $this->_getConfigurationValue(
+			'cacheDirectory',
+			dirname($path) . DIRECTORY_SEPARATOR . 'cache');
+
+		if (!is_dir($cacheDir)) {
+			mkdir($cacheDir, 0777);
+		}
+
+		return $cacheDir;
 	}
 
 /**
@@ -494,7 +490,7 @@ class Less {
 							new \RecursiveDirectoryIterator(
 								$directory, \FilesystemIterator::SKIP_DOTS
 							),
-							'/^(?!.*(\/inc|\.txt|\.cvs|\.svn|\.git)).*$/', \RecursiveRegexIterator::MATCH
+							'/^(?!.*(\/inc|\.txt|\.cvs|\.svn|\.git|\.map)).*$/', \RecursiveRegexIterator::MATCH
 						),
 						\RecursiveIteratorIterator::SELF_FIRST
 					);
