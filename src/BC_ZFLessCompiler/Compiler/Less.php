@@ -227,7 +227,11 @@ class Less {
 		self::$_lessPHPfile = $path . DIRECTORY_SEPARATOR . $file;
 
 		if (!file_exists(self::$_lessPHPfile)) {
-			throw new LessCompilerException(sprintf('Less.php file "%s" does not exist!', $file));
+			self::$_lessPHPfile = $path . DIRECTORY_SEPARATOR . 'Parser.php';
+
+			if (!file_exists(self::$_lessPHPfile)) {
+				throw new LessCompilerException(sprintf('Less.php or Parser.php file "%s" does not exist!', $file));
+			}
 		}
 
 		require_once($path . DIRECTORY_SEPARATOR  . 'Version.php');
