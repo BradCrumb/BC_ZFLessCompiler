@@ -1,5 +1,5 @@
 {
-    "name": "bradcrumb/BC_ZFLessCompiler",
+    "name": "bradcrumb/bc_zf-less-compiler",
     "description": "A LessCompiler Module for ZF2",
     "license": "GNU GENERAL PUBLIC LICENSE",
     "keywords": [
