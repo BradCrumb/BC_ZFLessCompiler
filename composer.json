@@ -10,6 +10,11 @@
     ],
     "homepage": "https://github.com/BradCrumb/BC_ZFLessCompiler",
     "require": {
-	"leafo/lessphp": "0.4.0"
+	"oyejorge/less.php": "1.7.0.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "BC_ZFLessCompiler\\": "src/"
+        }
     }
 }
