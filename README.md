@@ -1,6 +1,6 @@
 #ZendFramework2+ LessCompiler
 
-A module for Zend Framework 2+ to easily compile all of your Less-files by using and extending the PHP Less compiler of http://leafo.net.
+A module for Zend Framework 2+ to easily compile all of your Less-files by using and extending the Less.PHP Compiler of http://lessphp.gpeasy.com/.
 
 ## Requirements
 
@@ -8,11 +8,21 @@ This module has the following requirements:
 
 * PHP 5.3.0 or greater.
 * ZendFramework 2.2 or greater
-* Lessc by Leafo.net in the vendor map (default git clone will do) 0.4.0 or greater
+* Less.PHP Compiler in the vendor map (default git clone will do, or with composer) 1.7.0 or greater
 
 ## Installation
 
-* Clone this repository into the module directory of your application or use a svn external
+### Composer
+
+	php composer.phar require  bradcrumb/bc_zf-less-compiler
+
+### Or clone the repository
+
+	git clone https://github.com/BradCrumb/BC_ZFLessCompiler.git
+
+
+### Load Module
+
 * Make your application aware of the module by add the module's name to the application.config.php file.
   ie.
   return array(
@@ -27,8 +37,8 @@ This module has the following requirements:
 ## Configuration
 Since ZF2 is no longer environment aware, so isn't this module.
 In de module's configuration folder you'll find a file called 'lesscompiler.global.php.dist'.
-To configure the LessCompiler to your needs you'll have the copy the file to the application's 
-config/autoload folder en remove the .dist extension. 
+To configure the LessCompiler to your needs you'll have the copy the file to the application's
+config/autoload folder en remove the .dist extension.
 Read the ZF documentation on how to use the naming conventions regarding configuration files.
 ie. global could also be local.
 
@@ -41,15 +51,15 @@ The options are
 - autoRun (default: false)
 	Always compile the Less files (ignores the enabled option)
 
-- path_to_leafo_lessphp (default: vendor/lessphp)
-	Set the path for the LessPHP files by Leafo (https://github.com/lessphp)
-	Defaults to "lessphp" in the application's vendor map
+- pathToLessphp (default: vendor/oyejorge/less.php/lib/Less)
+	Set the path for the Less.PHP files
+	Defaults to "less.php" in the application's vendor map
 
 - importDir (default: null)
 	Import directory: please use realpath(...) to get a valid directory
 	ie. realpath(getcwd() . '/less/inc/');
 
-- sourceFolder (default: null)	 
+- sourceFolder (default: null)
 	Where to look for Less files
 
 - targetFolder (default: null)
@@ -64,8 +74,8 @@ The options are
 - variables (default: array())
 	Array of php variables (see leafo.net/lessphp for more info)
 
-- cache (default: null)	
-	Pass cache options as an array or pass even a complete 
+- cache (default: null)
+	Pass cache options as an array or pass even a complete
     cache adapter which extends \Zend\Cache\Storage\Adapter\AbstractAdapter
     Configurable array options are the keys: name, ttl and namespace.
     Other array_keys will be ignored
