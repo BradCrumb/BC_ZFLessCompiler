@@ -63,9 +63,11 @@ class Module implements
             $config = $serviceManager->get(__NAMESPACE__ . 'Config');
 
             $lessCompiler = new LessCompiler($config);
-            $lessCompiler->setEnforcement(
-                $event->getRequest()->getQuery(LessCompiler::QUERY_PARAM_ENFORCEMENT, false)
-            );
+            if ($event->getRequest() instanceof \Zend\Http\PhpEnvironment\Request) {
+                $lessCompiler->setEnforcement(
+                    $event->getRequest()->getQuery(LessCompiler::QUERY_PARAM_ENFORCEMENT, false)
+                );
+            }
             $lessCompiler->run();
 
             $this->hasRun = true;
