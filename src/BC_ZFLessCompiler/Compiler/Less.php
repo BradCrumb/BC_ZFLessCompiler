@@ -407,6 +407,9 @@ class Less {
 		extract($opts);
 		$files = $this->getFilesFromDirectory($lessFolder);
 		foreach ($files as $file) {
+			if (in_array($file->getPath(), $importDirs)) {
+				continue;
+			}
 			$path = str_ireplace(
 				rtrim($lessFolder, DIRECTORY_SEPARATOR),
 				null,
