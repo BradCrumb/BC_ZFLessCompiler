@@ -130,14 +130,14 @@ class Cache extends \Less_Cache {
 			return;
 		}
 
-		$files = scandir(Less_Cache::$cache_dir);
+		$files = scandir(\Less_Cache::$cache_dir);
 		if( $files ){
 			$check_time = time() - (604800 / 7);
 			foreach($files as $file){
 				if( strpos($file,'lessphp_') !== 0 ){
 					continue;
 				}
-				$full_path = Less_Cache::$cache_dir.'/'.$file;
+				$full_path = \Less_Cache::$cache_dir.'/'.$file;
 				if( filemtime($full_path) > $check_time ){
 					continue;
 				}
