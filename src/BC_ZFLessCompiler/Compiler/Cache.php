@@ -44,7 +44,7 @@ class Cache extends \Less_Cache {
 	 		// check cached content
 	 		if( file_exists($list_file) ){
 				$list = explode("\n",file_get_contents($list_file));
-				$compiled_name = self::CompiledName($list);
+				$compiled_name = self::CompiledName($list, $hash);
 				$compiled_file = \Less_Cache::$cache_dir.$compiled_name;
 				if( file_exists($compiled_file) ){
 					@touch($list_file);
@@ -65,7 +65,7 @@ class Cache extends \Less_Cache {
 		file_put_contents( $list_file, $cache );
 
 		//save the css
-		$compiled_name = self::CompiledName( $less_files );
+		$compiled_name = self::CompiledName( $less_files, $hash );
 		file_put_contents( \Less_Cache::$cache_dir.$compiled_name, $compiled );
 
 		//clean up
@@ -74,7 +74,7 @@ class Cache extends \Less_Cache {
 		return $compiled_name;
 	}
 
-	protected static function CompiledName( $files ){
+	protected static function CompiledName( $files, $extrahash ){
 
 		//save the file list
 		$temp = array(\Less_Version::cache_version);
@@ -82,7 +82,7 @@ class Cache extends \Less_Cache {
 			$temp[] = filemtime($file)."\t".filesize($file)."\t".$file;
 		}
 
-		return 'lessphp_'.sha1(json_encode($temp)).'.css';
+		return 'lessphp_'.sha1(json_encode($temp) . $extrahash).'.css';
 	}
 
 	public static function Cache( &$less_files, $parser_options = array(), $importDirs = array(), $variables = array()){
